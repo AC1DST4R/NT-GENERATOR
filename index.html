@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Nitro Type Script Customizer</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #121212;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      padding: 40px;
+    }
+
+    .container {
+      background: #1e1e1e;
+      padding: 25px;
+      border-radius: 10px;
+      width: 400px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    }
+
+    h2 { text-align: center; }
+
+    label {
+      display: block;
+      margin-top: 15px;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border-radius: 5px;
+      border: none;
+    }
+
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 10px;
+      background: #00c853;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #00e676;
+    }
+
+    .warning {
+      margin-top: 10px;
+      color: #ff5252;
+      font-size: 14px;
+      display: none;
+    }
+
+    .info {
+      margin-top: 10px;
+      color: #ffd54f;
+      font-size: 13px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Script Customizer</h2>
+
+  <label>Min WPM</label>
+  <input type="number" id="minWpm" value="110">
+
+  <label>Max WPM</label>
+  <input type="number" id="maxWpm" value="120">
+
+  <div id="wpmWarning" class="warning">
+    ⚠️ AUTOBAN RISK: WPM over 200 may get you flagged or banned.
+  </div>
+
+  <label>Min Accuracy (%)</label>
+  <input type="number" id="minAcc" value="96" max="100">
+
+  <label>Max Accuracy (%)</label>
+  <input type="number" id="maxAcc" value="98" max="100">
+
+  <div id="accInfo" class="info">
+    ℹ️ Accuracy capped at 100%.
+  </div>
+
+  <button onclick="generateScript()">Generate & Download</button>
+</div>
+
+<script>
+let baseScript = "";
+
+// Load Script.js
+fetch("Script.js")
+  .then(res => res.text())
+  .then(data => {
+    baseScript = data;
+    console.log("Script.js loaded");
+  })
+  .catch(() => {
+    alert("Could not load Script.js. Make sure it's in the same folder.");
+  });
+
+// Elements
+const minWpmEl = document.getElementById("minWpm");
+const maxWpmEl = document.getElementById("maxWpm");
+const minAccEl = document.getElementById("minAcc");
+const maxAccEl = document.getElementById("maxAcc");
+
+const wpmWarning = document.getElementById("wpmWarning");
+const accInfo = document.getElementById("accInfo");
+
+// 🔁 Auto-fix + validation
+[minWpmEl, maxWpmEl, minAccEl, maxAccEl].forEach(el => {
+  el.addEventListener("input", validateInputs);
+});
+
+function validateInputs() {
+  let minWpm = parseInt(minWpmEl.value) || 0;
+  let maxWpm = parseInt(maxWpmEl.value) || 0;
+  let minAcc = parseInt(minAccEl.value) || 0;
+  let maxAcc = parseInt(maxAccEl.value) || 0;
+
+  // ✅ Fix WPM range
+  if (minWpm > maxWpm) {
+    maxWpmEl.value = minWpm;
+  }
+
+  // 🚨 Show WPM warning
+  if (minWpm > 200 || maxWpm > 200) {
+    wpmWarning.style.display = "block";
+  } else {
+    wpmWarning.style.display = "none";
+  }
+
+  // ✅ Clamp accuracy to 100
+  let clamped = false;
+
+  if (minAcc > 100) {
+    minAccEl.value = 100;
+    clamped = true;
+  }
+
+  if (maxAcc > 100) {
+    maxAccEl.value = 100;
+    clamped = true;
+  }
+
+  // ✅ Fix accuracy range
+  if (minAcc > maxAcc) {
+    maxAccEl.value = minAccEl.value;
+  }
+
+  // Show info if clamped
+  accInfo.style.display = clamped ? "block" : "none";
+}
+
+// 🎯 Generate script
+function generateScript() {
+  if (!baseScript) {
+    alert("Script not loaded yet!");
+    return;
+  }
+
+  let script = baseScript;
+
+  const minWpm = parseInt(minWpmEl.value);
+  const maxWpm = parseInt(maxWpmEl.value);
+  const minAcc = parseInt(minAccEl.value);
+  const maxAcc = parseInt(maxAccEl.value);
+
+  // 🚨 Final autoban confirmation
+  if (minWpm > 200 || maxWpm > 200) {
+    const proceed = confirm(
+      "⚠️ AUTOBAN RISK!\n\nWPM over 200 may get you banned.\n\nContinue?"
+    );
+    if (!proceed) return;
+  }
+
+  // Replace values
+  script = script.replace(/const MIN_WPM = \d+;/, `const MIN_WPM = ${minWpm};`);
+  script = script.replace(/const MAX_WPM = \d+;/, `const MAX_WPM = ${maxWpm};`);
+  script = script.replace(/const MIN_ACC = \d+;/, `const MIN_ACC = ${minAcc};`);
+  script = script.replace(/const MAX_ACC = \d+;/, `const MAX_ACC = ${maxAcc};`);
+
+  downloadFile(script);
+}
+
+// ⬇️ Download
+function downloadFile(content) {
+  const blob = new Blob([content], { type: "application/javascript" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "custom-nitro-script.user.js";
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
+</script>
+
+</body>
+</html>
