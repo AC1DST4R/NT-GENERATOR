@@ -1,3 +1,18 @@
+// ==UserScript==
+// @name         Auto Typer for Nitro Type (Customized By User) (NEW 2026)
+// @namespace    http://tampermonkey.net/
+// @version      1.0.0
+// @description  An auto-typing script with customizable speed and accuracy for Nitro Type.
+// @author       Anon2004
+// @match        https://www.nitrotype.com/race
+// @match        https://www.nitrotype.com/race/*
+// @icon         https://cdn2.steamgriddb.com/icon/2b16a44bb65751bb0ebe5d8b42644bc4/32/512x512.png
+// @license      MIT
+// @grant        none
+// @downloadURL https://update.greasyfork.org/scripts/536103/Auto%20Typer%20for%20Nitro%20Type%20%28NEW%202025%29.user.js
+// @updateURL https://update.greasyfork.org/scripts/536103/Auto%20Typer%20for%20Nitro%20Type%20%28NEW%202025%29.meta.js
+// ==/UserScript==
+
 /*
 ===================================================================================
 🛠️ SETUP INSTRUCTIONS – PLEASE READ CAREFULLY
